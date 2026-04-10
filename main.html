@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tahajud 40 Hari Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Great+Vibes&family=Amiri:ital@0;1&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/stayle.css">
+
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2 text-emerald-400">Tahajud Journey</h1>
+            <p class="text-slate-400 text-xs md:text-sm px-4 italic">"Bangunlah di sepertiga malam untuk menjemput ridho-Nya"</p>
+        </header>
+
+        <!-- Hadist Box -->
+        <div id="hadist-box" class="glass-card rounded-2xl p-5 md:p-6 mb-6 text-center border-l-4 border-emerald-500 min-h-[100px] flex flex-col justify-center">
+            <p id="quote-text" class="italic text-slate-200 text-sm md:text-base">Memuat hadits...</p>
+            <span id="quote-source" class="block mt-2 text-[10px] md:text-xs text-emerald-400 font-semibold uppercase"></span>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+            <div class="glass-card p-3 md:p-4 rounded-xl text-center">
+                <span class="block text-xl md:text-2xl font-bold text-emerald-400" id="total-done">0</span>
+                <span class="text-[10px] text-slate-400 uppercase">Hari Berhasil</span>
+            </div>
+            <div class="glass-card p-3 md:p-4 rounded-xl text-center">
+                <span class="block text-xl md:text-2xl font-bold" id="total-remaining">40</span>
+                <span class="text-[10px] text-slate-400 uppercase">Sisa Hari</span>
+            </div>
+            <div class="glass-card p-3 md:p-4 rounded-xl text-center">
+                <span class="block text-xl md:text-2xl font-bold" id="progress-percent">0%</span>
+                <span class="text-[10px] text-slate-400 uppercase">Progres</span>
+            </div>
+            <div class="glass-card p-3 md:p-4 rounded-xl text-center flex flex-col justify-center items-center gap-2">
+                <div class="flex flex-col gap-1 w-full">
+                    <button onclick="askName()" class="text-emerald-400 hover:text-emerald-300 text-[9px] font-bold uppercase py-1 px-2 border border-emerald-900/30 rounded bg-emerald-950/20">Set Nama</button>
+                    <button onclick="resetData()" class="text-rose-400 hover:text-rose-300 text-[9px] font-bold uppercase py-1 px-2 border border-rose-900/30 rounded bg-rose-950/20">Hapus Data</button>
+                </div>
+                <button id="show-cert-btn" onclick="showCertificate()" class="hidden text-emerald-400 hover:text-emerald-300 text-[10px] font-bold uppercase underline decoration-dotted">Lihat Apresiasi</button>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2 md:gap-3" id="grid-container"></div>
+
+       <footer class="mt-12 text-center text-slate-500 text-[10px] md:text-xs pb-8">
+            &copy; 2026 @edong-Catatan perjalanan menuju Allah<br>
+            <span class="italic font-light">"Data tersimpan otomatis di browser perangkat Anda"</span>
+        </footer>
+    </div>
+
+    <!-- Modal Apresiasi (2 Halaman) -->
+    <div id="congrats-modal">
+        <div class="max-w-4xl mx-auto">
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-3 mb-6 no-print">
+                <button onclick="downloadPDF()" class="bg-emerald-600 text-white px-5 py-2 rounded-full font-bold text-xs shadow-xl hover:bg-emerald-500 transition-all flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PDF
+                </button>
+                <button onclick="closeModal()" class="bg-white/10 text-white px-5 py-2 rounded-full font-bold text-xs border border-white/20 hover:bg-white/20 transition-all">Tutup</button>
+            </div>
+
+            <div id="pdf-content">
+                <!-- Halaman 1: Piagam -->
+                <div class="pdf-page rounded-lg overflow-hidden">
+                    <div class="cert-container">
+                        <div class="inner-border text-center">
+                            <div class="cert-title mb-1">Piagam Penghargaan</div>
+                            <p class="text-[10px] text-slate-500 italic mb-4 uppercase tracking-widest">Syahadat Al-Istiqomah</p>
+                            
+                            <p class="text-slate-600 mb-2 italic text-sm">Diberikan dengan penuh rasa syukur kepada:</p>
+                            <h3 id="user-name-display" class="text-3xl font-bold text-emerald-700 mb-5 border-b-2 border-emerald-200 inline-block px-8">Hamba Allah</h3>
+                            
+                            <p class="text-slate-600 mb-1 italic text-xs">atas keberhasilannya dalam menjaga kedisiplinan beribadah</p>
+                            <h2 class="text-2xl font-bold text-slate-800 mb-5 uppercase tracking-[0.2em] bg-emerald-50 py-2">40 Malam Tahajud</h2>
+                            
+                            <div class="px-10 mb-6">
+                                <p class="text-xs text-slate-600 leading-relaxed italic">
+                                    "Semoga Allah SWT senantiasa menetapkan hati ini dalam ketaatan, menerangi setiap langkah dengan cahaya malam-malam yang dilalui dalam sujud, dan menjadikan ibadah ini sebagai pemberat timbangan amal di hari akhir nanti."
+                                </p>
+                            </div>
+
+                            <div class="flex justify-between items-end mt-8 px-8">
+                                <!-- Digital Signature -->
+                                <div class="text-center w-32">
+                                    <p class="text-[9px] uppercase font-bold text-slate-400 mb-1">Ditetapkan Oleh</p>
+                                    <div class="digital-signature leading-none">Niat Ikhlas</div>
+                                    <div class="border-t border-slate-300 mt-1 pt-1">
+                                        <p class="text-[10px] font-bold text-emerald-800 italic uppercase">Hati Sanubari</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- QR Code -->
+                                <div class="flex flex-col items-center gap-1">
+                                    <div id="qrcode-container" class="p-1 border border-slate-200 rounded bg-white">
+                                        <img id="qrcode-img" src="" alt="QR Code" class="w-16 h-16">
+                                    </div>
+                                    <p class="text-[8px] text-slate-400 uppercase font-semibold">Cek Keaslian</p>
+                                </div>
+
+                                <div class="text-right w-32">
+                                    <p class="text-[9px] uppercase font-bold text-slate-400 mb-1">Tanggal Selesai</p>
+                                    <div class="h-10 flex items-center justify-end">
+                                        <p id="cert-date" class="text-xs font-bold text-slate-800">-</p>
+                                    </div>
+                                    <div class="border-t border-slate-300 mt-1 pt-1">
+                                        <p class="text-[9px] uppercase text-emerald-600 font-bold">Terverifikasi</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalDays = 40;
+        const gridContainer = document.getElementById('grid-container');
+        const totalDoneEl = document.getElementById('total-done');
+        const totalRemainingEl = document.getElementById('total-remaining');
+        const progressPercentEl = document.getElementById('progress-percent');
+        const quoteTextEl = document.getElementById('quote-text');
+        const quoteSourceEl = document.getElementById('quote-source');
+        const modal = document.getElementById('congrats-modal');
+        const showCertBtn = document.getElementById('show-cert-btn');
+        const userNameDisplay = document.getElementById('user-name-display');
+        const certDateEl = document.getElementById('cert-date');
+        const qrCodeImg = document.getElementById('qrcode-img');
+
+        const dailyQuotes = [
+            {
+                text: '"Salat yang paling utama setelah salat fardu adalah salat malam."',
+                source: "HR. Muslim"
+            },
+            {
+                text: '"Rabb kita turun ke langit dunia setiap malam pada sepertiga malam terakhir, lalu berfirman: Siapa yang berdoa kepada-Ku, Aku kabulkan."',
+                source: "HR. Bukhari & Muslim"
+            },
+            {
+                text: '"Di malam hari terdapat suatu waktu, tidaklah seorang muslim berdoa bertepatan dengannya, kecuali Allah akan mengabulkannya."',
+                source: "HR. Muslim"
+            },
+            {
+                text: '"Hendaklah kalian melakukan salat malam, karena itu kebiasaan orang-orang saleh sebelum kalian."',
+                source: "HR. Tirmidzi (hasan)"
+            },
+            {
+                text: '"Kemuliaan seorang mukmin terletak pada salat malamnya."',
+                source: "HR. Al-Hakim (hasan)"
+            },
+            {
+                text: '"Setan mengikat tengkuk salah seorang di antara kalian ketika tidur dengan tiga ikatan."',
+                source: "HR. Bukhari & Muslim"
+            },
+            {
+                text: '"Barangsiapa bangun di malam hari lalu membangunkan istrinya dan mereka salat dua rakaat, dicatat sebagai orang yang banyak berdzikir."',
+                source: "HR. Abu Dawud"
+            },
+            {
+                text: '"Sebaik-baik salat setelah salat wajib adalah salat malam."',
+                source: "HR. Muslim"
+            },
+            {
+                text: '"Sesungguhnya di surga ada kamar yang bagian luarnya terlihat dari dalam, disediakan bagi yang berkata baik, memberi makan, dan salat malam saat manusia tidur."',
+                source: "HR. Tirmidzi"
+            },
+            {
+                text: '"Orang yang paling dekat dengan Rabb-nya adalah di sepertiga malam terakhir."',
+                source: "HR. Tirmidzi"
+            },
+            {
+                text: '"Biasakanlah qiyamul lail, karena itu mendekatkan diri kepada Allah dan mencegah dari perbuatan dosa."',
+                source: "HR. Tirmidzi"
+            },
+            {
+                text: '"Puasa yang paling utama setelah Ramadan adalah bulan Allah Muharram, dan salat yang paling utama setelah fardu adalah salat malam."',
+                source: "HR. Muslim"
+            },
+            {
+                text: '"Allah merahmati seorang laki-laki yang bangun malam lalu salat dan membangunkan istrinya."',
+                source: "HR. Abu Dawud"
+            },
+            {
+                text: '"Janganlah kamu seperti si fulan, dahulu ia bangun malam lalu meninggalkannya."',
+                source: "HR. Bukhari & Muslim"
+            },
+            {
+                text: '"Sesungguhnya orang-orang yang bangun malam akan mendapatkan derajat tinggi di sisi Allah."',
+                source: "Makna hadis (diringkas)"
+            }
+        ];
+
+        let progress = JSON.parse(localStorage.getItem('tahajudProgress')) || [];
+        let userName = localStorage.getItem('tahajudUserName') || "";
+
+        function askName() {
+            let current = localStorage.getItem('tahajudUserName') || "";
+            let input = prompt("Masukkan nama Anda untuk piagam:", current);
+            if (input !== null) {
+                userName = input.trim() || "";
+                if (userName) localStorage.setItem('tahajudUserName', userName);
+                else localStorage.removeItem('tahajudUserName');
+                userNameDisplay.textContent = userName || "Hamba Allah";
+                generateQRCode(); // Perbarui QR jika nama ganti
+            }
+        }
+
+        function initGrid() {
+            gridContainer.innerHTML = '';
+            for (let i = 1; i <= totalDays; i++) {
+                const done = progress.includes(i);
+                const node = document.createElement('div');
+                node.className = `day-node aspect-square flex items-center justify-center rounded-lg cursor-pointer font-bold text-sm ${done ? 'completed' : 'bg-slate-800 text-slate-500 border border-slate-700'}`;
+                node.textContent = i;
+                node.onclick = () => toggleDay(i);
+                gridContainer.appendChild(node);
+            }
+            updateStats();
+            updateQuote();
+            userNameDisplay.textContent = userName || "Hamba Allah";
+        }
+
+        function toggleDay(day) {
+            const idx = progress.indexOf(day);
+            if (idx === -1) {
+                progress.push(day);
+                if (progress.length === totalDays) {
+                    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    certDateEl.textContent = dateStr;
+                    generateQRCode();
+                    setTimeout(showCertificate, 400);
+                }
+            } else {
+                progress.splice(idx, 1);
+            }
+            saveData();
+            initGrid();
+        }
+
+        function generateQRCode() {
+            const name = userName || "Hamba Allah";
+            const date = certDateEl.textContent || "-";
+            const verifyData = encodeURIComponent(`Sertifikat Tahajud 40 Hari: ${name} pada ${date}. Terverifikasi Ikhlas.`);
+            // Menggunakan QR Server API (Gratis)
+            qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${verifyData}`;
+        }
+
+        function saveData() {
+            progress.sort((a, b) => a - b);
+            localStorage.setItem('tahajudProgress', JSON.stringify(progress));
+        }
+
+        function updateStats() {
+            const done = progress.length;
+            totalDoneEl.textContent = done;
+            totalRemainingEl.textContent = totalDays - done;
+            progressPercentEl.textContent = Math.round((done / totalDays) * 100) + '%';
+            if (done === totalDays) {
+                showCertBtn.classList.remove('hidden');
+                generateQRCode();
+            } else {
+                showCertBtn.classList.add('hidden');
+            }
+        }
+
+        function updateQuote() {
+            let idx = progress.length % dailyQuotes.length;
+            const q = dailyQuotes[idx];
+            quoteTextEl.textContent = q.text;
+            quoteSourceEl.textContent = q.source;
+        }
+
+        function showCertificate() {
+            userNameDisplay.textContent = userName || "Hamba Allah";
+            if (!certDateEl.textContent || certDateEl.textContent === "-") {
+                certDateEl.textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+            generateQRCode();
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('pdf-content');
+            const opt = {
+                margin: 0,
+                filename: `Tahajud_40_Hari_${userName || 'Hamba_Allah'}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function resetData() {
+            if (confirm("Hapus semua progres?")) {
+                progress = [];
+                userName = "";
+                localStorage.removeItem('tahajudProgress');
+                localStorage.removeItem('tahajudUserName');
+                initGrid();
+            }
+        }
+
+        window.onload = initGrid;
+    </script>
+</body>
+</html>
